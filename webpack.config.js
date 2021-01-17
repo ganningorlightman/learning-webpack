@@ -1,10 +1,11 @@
 const path = require("path");
+const webpack = require("webpack");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const OptimizeCssAssetWebpackPlugin = require('optimize-css-assets-webpack-plugin');
-const TerserWebpackPlugin = require('terser-webpack-plugin');
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const OptimizeCssAssetWebpackPlugin = require("optimize-css-assets-webpack-plugin");
+const TerserWebpackPlugin = require("terser-webpack-plugin");
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
 
 const isProd = process.env.NODE_ENV === "production";
@@ -12,8 +13,9 @@ const isDev = !isProd;
 
 const optimization = () => {
     const config = {
+        runtimeChunk: true,
         splitChunks: {
-            chunks: 'all'
+            chunks: "all"
         }
     }
 
@@ -26,11 +28,11 @@ const optimization = () => {
 
     return config
 }
-const filename = ext => isDev ? `[name].${ext}` : `[name].[hash].${ext}`;
+const filename = ext => isDev ? `[name].${ext}` : `[name].bundle.[hash].${ext}`;
 const cssLoaders = extra => {
     const loaders = [
         MiniCssExtractPlugin.loader,
-        'css-loader'
+        "css-loader"
     ]
 
     if (extra) {
@@ -42,10 +44,10 @@ const cssLoaders = extra => {
 const babelOptions = preset => {
     const opts = {
         presets: [
-            '@babel/preset-env'
+            "@babel/preset-env"
         ],
         plugins: [
-            '@babel/plugin-proposal-class-properties'
+            "@babel/plugin-proposal-class-properties"
         ]
     }
 
@@ -57,12 +59,12 @@ const babelOptions = preset => {
 }
 const jsLoaders = () => {
     const loaders = [{
-        loader: 'babel-loader',
+        loader: "babel-loader",
         options: babelOptions()
     }]
 
     if (isDev) {
-        loaders.push('eslint-loader')
+        loaders.push("eslint-loader")
     }
 
     return loaders
@@ -71,8 +73,12 @@ const plugins = () => {
     const base = [
         new CleanWebpackPlugin(),
         new HTMLWebpackPlugin({
+            // title: "Webpack",
+            favicon: "favicon.ico",
             template: "index.html",
             filename: "index.html",
+            hash: isProd,
+            inject: true,
             scriptLoading: "defer",
             minify: {
                 removeComments: isProd,
@@ -91,17 +97,21 @@ const plugins = () => {
                 removeScriptTypeAttributes: isProd,
             }
         }),
-        new CopyWebpackPlugin({
-            patterns: [
-                {
-                    from: path.resolve(__dirname, "src/favicon.ico"),
-                    to: path.resolve(__dirname, "dist")
-                },
-            ]
-        }),
+        // new CopyWebpackPlugin({
+        //     patterns: [
+        //         {
+        //             from: path.resolve(__dirname, "src/favicon.ico"),
+        //             to: path.resolve(__dirname, "dist")
+        //         },
+        //     ]
+        // }),
         new MiniCssExtractPlugin({
             filename: filename("css")
-        })
+        }),
+        new webpack.DefinePlugin({
+            "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV)
+        }),
+        new webpack.HotModuleReplacementPlugin(),
     ];
 
     if (isProd) {
@@ -121,7 +131,7 @@ module.exports = {
     output: {
         filename: filename("js"),
         path: path.resolve(__dirname, "dist"),
-        publicPath: ''
+        publicPath: "/"
     },
     resolve: {
         extensions: [".js", "json"],
@@ -134,8 +144,14 @@ module.exports = {
     optimization: optimization(),
     devServer: {
         port: 4243,
-        hot: isDev,
+        // https: true,
+        // lazy: true,
+        hot: true,
+        open: true,
         writeToDisk: true,
+        compress: true,
+        historyApiFallback: true,
+        contentBase: path.resolve(__dirname, "dist"),
     },
     devtool: isDev ? "source-map" : false,
     plugins: plugins(),
@@ -150,16 +166,16 @@ module.exports = {
                 test: /\.ts$/,
                 exclude: /node_modules/,
                 use: {
-                    loader: 'babel-loader',
-                    options: babelOptions('@babel/preset-typescript')
+                    loader: "babel-loader",
+                    options: babelOptions("@babel/preset-typescript")
                 }
             },
             {
                 test: /\.jsx$/,
                 exclude: /node_modules/,
                 use: {
-                    loader: 'babel-loader',
-                    options: babelOptions('@babel/preset-react')
+                    loader: "babel-loader",
+                    options: babelOptions("@babel/preset-react")
                 }
             },
             // {
@@ -172,27 +188,58 @@ module.exports = {
             },
             {
                 test: /\.less$/,
-                use: cssLoaders('less-loader')
+                use: cssLoaders("less-loader")
             },
             {
                 test: /\.s[ac]ss$/,
-                use: cssLoaders('sass-loader')
+                use: cssLoaders("sass-loader")
             },
+            // {
+            //     test: /\.(?:ico|gif|png|jpe?g|svg)$/i,
+            //     use: ["file-loader"],
+            //     type: "javascript/auto"
+            // },
             {
-                test: /\.(png|jpg|svg|gif)$/,
-                use: ['file-loader']
+                test: /\.(?:ico|gif|png|jpe?g)$/i,
+                type: "asset/resource",
             },
+            // {
+            //     test: /\.(woff(2)?|eot|ttf|otf)$/,
+            //     use: ["file-loader"],
+            //     type: "javascript/auto"
+            // },
+            // {
+            //     test: /\.(woff(2)?|eot|ttf|otf)$/,
+            //     use: [
+            //         {
+            //             loader: "url-loader",
+            //             options: {
+            //                 limit: 8192,
+            //             },
+            //         },
+            //     ],
+            //     type: "javascript/auto"
+            // },
             {
-                test: /\.(ttf|woff|woff2|eot)$/,
-                use: ['file-loader']
+                test: /\.(woff(2)?|eot|ttf|otf|svg|)$/,
+                type: "asset/inline",
+            },
+            // {
+            //     test: /\.txt$/i,
+            //     use: "raw-loader",
+            //     type: "javascript/auto"
+            // },
+            {
+                test: /\.txt$/i,
+                type: "asset/source",
             },
             {
                 test: /\.xml$/,
-                use: ['xml-loader']
+                use: ["xml-loader"]
             },
             {
                 test: /\.csv$/,
-                use: ['csv-loader']
+                use: ["csv-loader"]
             },
         ],
     }

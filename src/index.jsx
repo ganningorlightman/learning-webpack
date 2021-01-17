@@ -6,6 +6,7 @@ import "./styles/less.less";
 import "./styles/scss.scss";
 import json from "./assets/json.json";
 import WebpackLogo from './assets/webpack-logo.png';
+import txt from "./assets/file.txt";
 import xml from "./assets/data.xml";
 import csv from "./assets/data.csv";
 import React from 'react'
@@ -31,10 +32,11 @@ const App = () => (
 
 render(<App/>, document.getElementById('app'))
 
-// const post = new Post('Webpack Post Title', WebpackLogo);
-// $("pre").addClass("code").html(post.toString())
-//
-// console.log("Post to String: ", post.toString());
-// console.log("JSON: ", json);
-// console.log("XML: ", xml);
-// console.log("CSV: ", csv);
+const post = new Post('Webpack Post Title', WebpackLogo);
+$("pre").addClass("code").html(post.toString())
+
+console.log("Post to String: ", post.toString());
+console.log("TXT: ", txt);
+console.log("JSON: ", json);
+console.log("XML: ", xml);
+console.log("CSV: ", csv);

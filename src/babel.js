@@ -1,5 +1,6 @@
 async function start() {
-  return await Promise.resolve('async is working')
+  const value = await Promise.resolve("async is working");
+  return value;
 }
 
 start().then(console.log)
@@ -7,12 +8,12 @@ start().then(console.log)
 const unused = 42
 
 class Util {
-  static id = Date.now()
+  static id = Date.now();
 }
 
-console.log('Util Id:', Util.id)
-console.log(unused)
+console.log("Util Id:", Util.id);
+console.log(unused);
 
-import('lodash').then(_ => {
-  console.log('Lodash', _.random(0, 42, true))
+import("lodash").then(_ => {
+  console.log("Lodash", _.random(0, 42, true))
 })
