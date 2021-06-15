@@ -143,11 +143,12 @@ module.exports = {
     target: isDev ? "web" : "browserslist",
     optimization: optimization(),
     devServer: {
-        port: 4243,
+        port: 4242,
         // https: true,
         // lazy: true,
         hot: true,
         open: true,
+        progress: true,
         writeToDisk: true,
         compress: true,
         historyApiFallback: true,
